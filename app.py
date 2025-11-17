@@ -1,23 +1,18 @@
-from flask import Flask, render_template, request
-import requests
-import os
+from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-CHAT_ID = os.getenv("CHAT_ID")
+@app.route('/')
+def home():
+    return "Лабораторна робота 3 успішно запущена!"
 
-@app.route("/")
-def index():
-    return render_template("index.html")
+@app.route('/submit', methods=['POST'])
+def submit_name():
+    data = request.get_json()
+    if not data or 'name' not in data:
+        return jsonify({"error": "Будь ласка, представтеся 'name'"}), 400
+    name = data['name']
+    return jsonify({"message": f"Дякую, {name}, дані отримано!"})
 
-@app.route("/submit", methods=["POST"])
-def submit():
-    fullname = request.form["fullname"]
-
-    message = f"🔔 Нове повідомлення!\nСтудент: {fullname}"
-
-    requests.get(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
-                 params={"chat_id": CHAT_ID, "text": message})
-
-    return "Дякую! Дані відправлено викладачу."
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
